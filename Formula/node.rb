@@ -1,4 +1,4 @@
-class NodeAT1891 < Formula
+class Node < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
   # TODO: Remove `ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib` at rebuild.
