@@ -1,8 +1,8 @@
 class PythonAT310 < Formula
   desc "Interpreted, interactive, object-oriented programming language"
   homepage "https://www.python.org/"
-  url "https://www.python.org/ftp/python/3.10.7/Python-3.10.7.tgz"
-  sha256 "1b2e4e2df697c52d36731666979e648beeda5941d0f95740aafbf4163e5cc126"
+  url "https://www.python.org/ftp/python/3.10.8/Python-3.10.8.tgz"
+  sha256 "f400c3fb394b8bef1292f6dc1292c5fadc3533039a5bc0c3e885f3e16738029a"
   license "Python-2.0"
 
   livecheck do
@@ -11,12 +11,14 @@ class PythonAT310 < Formula
   end
 
   bottle do
-    sha256 arm64_monterey: "d0c3a2f688f22d846b1057ddfb44ba75bd1a25aeb1c9d5c3f26799bc370e81f7"
-    sha256 arm64_big_sur:  "93d6912d2baba69d9f70e8e644549cc6e76f43289321d4a41904e5ba26dad56c"
-    sha256 monterey:       "710e2e28077bf203fd50929bb094cb142e26f6ffd6661a5867c38db365f6578c"
-    sha256 big_sur:        "39a095ef9fd4b456bd1bbdf62f85fbff0fbff78b9b92eef7dc94d8592799b491"
-    sha256 catalina:       "4b1dae6bf7f8c78e55256f04f3caa91c993c1edb403c581f007b1504456df2e8"
-    sha256 x86_64_linux:   "fbcdd7a049cccb0d5f35e5b570897c06bcea623b377e823260b72f4a281e0135"
+    rebuild 1
+    sha256 arm64_ventura:  "58948035f391012f3f7dadfbb43351453a6217bc7d28a1bdf993e8767000c350"
+    sha256 arm64_monterey: "8b1c01441f2dca4793a105919327a88418791ff6c9bb30575e7fe59991781cea"
+    sha256 arm64_big_sur:  "adcafc7cfb161b1bac9097c831dd05a0f598a9872decad4e9c1c266da22ff371"
+    sha256 monterey:       "017d295e8091cf75e95c8002806865dca73d47b898984fff0a4d00df63a28962"
+    sha256 big_sur:        "aae66daff6ce5b21497e42b2da13df9ae79048ae92c84dbb04c9f03b9430e0e9"
+    sha256 catalina:       "6d6357a145e0b1a3b066289ae0a6920089631400825b65a708f55a171b633c32"
+    sha256 x86_64_linux:   "2e0127173d003685094f79bf5f94652f66af803643cc89ae5dca0a5af8342e47"
   end
 
   # setuptools remembers the build flags python is built with and uses them to
@@ -65,8 +67,8 @@ class PythonAT310 < Formula
 
   # Always update to latest release
   resource "setuptools" do
-    url "https://files.pythonhosted.org/packages/cc/83/7ea9d9b3a6ff3225aca2fce5e4df373bee7e0a74c539711a4fbfda53374f/setuptools-65.3.0.tar.gz"
-    sha256 "7732871f4f7fa58fb6bdcaeadb0161b2bd046c85905dbaa066bdcbcc81953b57"
+    url "https://files.pythonhosted.org/packages/03/c9/7b050ea4cc4144d0328f15e0b43c839e759c6c639370a3b932ecf4c6358f/setuptools-65.4.1.tar.gz"
+    sha256 "3050e338e5871e70c72983072fe34f6032ae1cdeeeb67338199c2f74e083a80e"
   end
 
   resource "pip" do
@@ -142,13 +144,16 @@ class PythonAT310 < Formula
       --with-openssl=#{Formula["openssl@1.1"].opt_prefix}
       --with-dbmliborder=gdbm:ndbm
       --enable-optimizations
-      --with-lto
       --with-system-expat
       --with-system-ffi
       --with-system-libmpdec
     ]
 
     if OS.mac?
+      # Enabling LTO on Linux makes libpython3.*.a unusable for anyone whose GCC
+      # install does not match the one in CI _exactly_ (major and minor version).
+      # https://github.com/orgs/Homebrew/discussions/3734
+      args << "--with-lto"
       args << "--enable-framework=#{frameworks}"
       args << "--with-dtrace"
     else
