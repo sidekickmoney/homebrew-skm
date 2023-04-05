@@ -1,15 +1,24 @@
 class Node < Formula
   desc "Platform built on V8 to build network applications"
   homepage "https://nodejs.org/"
-  # TODO: Remove `ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib` at rebuild.
-  url "https://nodejs.org/dist/v18.9.1/node-v18.9.1.tar.xz"
-  sha256 "f381963d43568ba699915c88629dc6da4a1963804dcd37b2e6e1d10d923dd5d9"
+  url "https://nodejs.org/dist/v18.11.0/node-v18.11.0.tar.xz"
+  sha256 "8b9643dc6fce79c1e99379db0ce64e43601e2e2d7389015fe8985cc4ccd0ce17"
   license "MIT"
   head "https://github.com/nodejs/node.git", branch: "main"
 
   livecheck do
     url "https://nodejs.org/dist/"
     regex(%r{href=["']?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  end
+
+  bottle do
+    sha256 cellar: :any,                 arm64_ventura:  "fd0da21de656cd319c3c478c1bb1ceaf7a6ec54791716e00617ff568aef30ad6"
+    sha256 cellar: :any,                 arm64_monterey: "2dae00520299dd77f3a5d15b16254d71759b3d5d5770627b06e9b072fdea8460"
+    sha256 cellar: :any,                 arm64_big_sur:  "27e7d698b613618bc8ea0a2034253917a643747b160f376a895c068551737305"
+    sha256 cellar: :any,                 monterey:       "7ee7361d52d8681048220760f55192210196a8e4301abccd0153cce56cc585af"
+    sha256 cellar: :any,                 big_sur:        "3c166868f057be76e82897fea7f4734e14dae34df7bdb309e0c68ceec558bd36"
+    sha256 cellar: :any,                 catalina:       "703916644c5401ef73dda2fd106c2d89f851f876685f651e8aa6c38ff25c8208"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "e7002d0c460a1168d8ce31a9bacfe2325647b3bbba248b77e42f44527efc6bde"
   end
 
   depends_on "pkg-config" => :build
@@ -40,12 +49,11 @@ class Node < Formula
   # We track major/minor from upstream Node releases.
   # We will accept *important* npm patch releases when necessary.
   resource "npm" do
-    url "https://registry.npmjs.org/npm/-/npm-8.19.1.tgz"
-    sha256 "00a29eaa1fa8d44f6c3f3a114becc3b677a019dde90d87b41fd855663fe47742"
+    url "https://registry.npmjs.org/npm/-/npm-8.19.2.tgz"
+    sha256 "439fb2276f7039d2fba2739e361006f3bc25d6a6b3f88c1edb4d28ab5a7eb3f7"
   end
 
   def install
-    ENV.remove "HOMEBREW_LIBRARY_PATHS", Formula["llvm"].opt_lib
     ENV.llvm_clang if OS.mac? && (DevelopmentTools.clang_build_version <= 1100)
 
     # make sure subprocesses spawned by make are using our Python 3
