@@ -46,3 +46,4 @@ class Mpg123 < Formula
     system bin/"mpg123", "--test", test_fixtures("test.mp3")
   end
 end
+
