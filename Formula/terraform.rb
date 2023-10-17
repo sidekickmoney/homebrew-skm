@@ -1,68 +1,45 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+# https://github.com/hashicorp/homebrew-tap/blob/99a017c0865820a6f702df84ecceb0e66b973891/Formula/terraform.rb
+
 class Terraform < Formula
-  desc "Tool to build, change, and version infrastructure"
+  desc "Terraform"
   homepage "https://www.terraform.io/"
-  url "https://github.com/hashicorp/terraform/archive/v1.5.2.tar.gz"
-  sha256 "1fb4e2e583a65583a24a8af3699fd0a9cd762da71b2436d0b62e448fe89180e9"
-  license "MPL-2.0"
-  head "https://github.com/hashicorp/terraform.git", branch: "main"
+  version "1.6.1"
 
-  livecheck do
-    url "https://releases.hashicorp.com/terraform/"
-    regex(%r{href=.*?v?(\d+(?:\.\d+)+)/?["' >]}i)
+  if OS.mac? && Hardware::CPU.intel?
+    url "https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_darwin_amd64.zip"
+    sha256 "48951cc7f15bc028a867642425db720c18f13491007ee218dcc54b5ea0519d17"
   end
 
-  bottle do
-    sha256 cellar: :any_skip_relocation, arm64_ventura:  "cfe44675e962fc5188ca51de8a71321cd54d9da86fc2d1ef245eb8e9d3bb652a"
-    sha256 cellar: :any_skip_relocation, arm64_monterey: "cfe44675e962fc5188ca51de8a71321cd54d9da86fc2d1ef245eb8e9d3bb652a"
-    sha256 cellar: :any_skip_relocation, arm64_big_sur:  "cfe44675e962fc5188ca51de8a71321cd54d9da86fc2d1ef245eb8e9d3bb652a"
-    sha256 cellar: :any_skip_relocation, ventura:        "147474dc46877700e3678b6e7c41e4136c02346efaab1155f0597358ae6c64c9"
-    sha256 cellar: :any_skip_relocation, monterey:       "147474dc46877700e3678b6e7c41e4136c02346efaab1155f0597358ae6c64c9"
-    sha256 cellar: :any_skip_relocation, big_sur:        "147474dc46877700e3678b6e7c41e4136c02346efaab1155f0597358ae6c64c9"
-    sha256 cellar: :any_skip_relocation, x86_64_linux:   "ec6ce8db5bca1230d193ad3107643d0e929e2f05ea7c075a5d4710a2434a211a"
+  if OS.mac? && Hardware::CPU.arm?
+    url "https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_darwin_arm64.zip"
+    sha256 "85ad9903a48c1b997540d1b9fdd47d7b29cb6be740e7c34f6f8afc7581f4ac8e"
   end
 
-  depends_on "go" => :build
+  if OS.linux? && Hardware::CPU.intel?
+    url "https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip"
+    sha256 "d1a778850cc44d9348312c9527f471ea1b7a9213205bb5091ec698f3dc92e2a6"
+  end
 
-  conflicts_with "tfenv", because: "tfenv symlinks terraform binaries"
+  if OS.linux? && Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
+    url "https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_arm.zip"
+    sha256 "c21f46aedd581eac1fce2a779bce1fb58d38cf2c4be83ab3a54a216c638df0ee"
+  end
 
-  # Needs libraries at runtime:
-  # /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29' not found (required by node)
-  fails_with gcc: "5"
+  if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+    url "https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_arm64.zip"
+    sha256 "ae328d5733657f35233fd228d9a14fccde3b1d19b99158eff1906888b3ca4935"
+  end
+
+  conflicts_with "terraform"
 
   def install
-    system "go", "build", *std_go_args(ldflags: "-s -w")
+    bin.install "terraform"
   end
 
   test do
-    minimal = testpath/"minimal.tf"
-    minimal.write <<~EOS
-      variable "aws_region" {
-        default = "us-west-2"
-      }
-
-      variable "aws_amis" {
-        default = {
-          eu-west-1 = "ami-b1cf19c6"
-          us-east-1 = "ami-de7ab6b6"
-          us-west-1 = "ami-3f75767a"
-          us-west-2 = "ami-21f78e11"
-        }
-      }
-
-      # Specify the provider and access details
-      provider "aws" {
-        access_key = "this_is_a_fake_access"
-        secret_key = "this_is_a_fake_secret"
-        region     = var.aws_region
-      }
-
-      resource "aws_instance" "web" {
-        instance_type = "m1.small"
-        ami           = var.aws_amis[var.aws_region]
-        count         = 4
-      }
-    EOS
-    system "#{bin}/terraform", "init"
-    system "#{bin}/terraform", "graph"
+    system "#{bin}/terraform --version"
   end
 end
