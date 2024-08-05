@@ -1,54 +1,52 @@
 class Icu4c < Formula
-    desc "C/C++ and Java libraries for Unicode and globalization"
-    homepage "https://icu.unicode.org/home"
-    url "https://github.com/unicode-org/icu/releases/download/release-71-1/icu4c-71_1-src.tgz"
-    version "71.1"
-    sha256 "67a7e6e51f61faf1306b6935333e13b2c48abd8da6d2f46ce6adca24b1e21ebf"
-    license "ICU"
+  desc "C/C++ and Java libraries for Unicode and globalization"
+  homepage "https://icu.unicode.org/home"
+  url "https://github.com/unicode-org/icu/releases/download/release-74-2/icu4c-74_2-src.tgz"
+  version "74.2"
+  sha256 "68db082212a96d6f53e35d60f47d38b962e9f9d207a74cfac78029ae8ff5e08c"
+  license "ICU"
 
-    livecheck do
-      url :stable
-      regex(/^release[._-]v?(\d+(?:[.-]\d+)+)$/i)
-      strategy :git do |tags, regex|
-        tags.map { |tag| tag[regex, 1]&.gsub("-", ".") }.compact
-      end
-    end
-  
-    bottle do
-      sha256 cellar: :any,                 arm64_ventura:  "551de1e60e6f979676ee4e829a8485c2d326a71e6b736299356880c71ec3bc8c"
-      sha256 cellar: :any,                 arm64_monterey: "0bf3c66f005e2d7662375b4baadd3022d57294947f421f9f8628799008a987f4"
-      sha256 cellar: :any,                 arm64_big_sur:  "5cbb7c32192790d114f179ca9456df9a5cbd0094a9e2383c9ae8e4ec5e5cd568"
-      sha256 cellar: :any,                 ventura:        "012f882f239863200f0f87150541ea695d609aa14c14a390909d249352ae51f9"
-      sha256 cellar: :any,                 monterey:       "87617a04333c53236f5174f5a3fa70458d61d735024ed477c0484adf2c3f80d3"
-      sha256 cellar: :any,                 big_sur:        "4c2904b4e7af60796e202d9f5ced39443ffd657b61a007b67bd109534b00c03f"
-      sha256 cellar: :any,                 catalina:       "0182e3999a76593888bc2b5d54c275b6d7f0eb75db354a3a37925179a9e91d84"
-      sha256 cellar: :any_skip_relocation, x86_64_linux:   "89bcfb2f075f7ea40053a09804479bef4457b1f7f606617fb15116edef53c2e9"
-    end
-  
-    keg_only :provided_by_macos, "macOS provides libicucore.dylib (but nothing else)"
-  
-    def install
-      args = %W[
-        --prefix=#{prefix}
-        --disable-samples
-        --disable-tests
-        --enable-static
-        --with-library-bits=64
-      ]
-  
-      cd "source" do
-        system "./configure", *args
-        system "make"
-        system "make", "install"
-      end
-    end
-  
-    test do
-      if File.exist? "/usr/share/dict/words"
-        system "#{bin}/gendict", "--uchars", "/usr/share/dict/words", "dict"
-      else
-        (testpath/"hello").write "hello\nworld\n"
-        system "#{bin}/gendict", "--uchars", "hello", "dict"
-      end
+  livecheck do
+    url :stable
+    regex(/^release[._-]v?(\d+(?:[.-]\d+)+)$/i)
+    strategy :git do |tags, regex|
+      tags.filter_map { |tag| tag[regex, 1]&.tr("-", ".") }
     end
   end
+
+  bottle do
+    sha256 cellar: :any,                 arm64_sonoma:   "3facc22a7821e01d93a38e371e377f13275299d518929222ed34c77a4f4a65d3"
+    sha256 cellar: :any,                 arm64_ventura:  "3c707a483df52f58010f3ab48f14e6e875cd99aefbac58ed6abf67f59b0a58d8"
+    sha256 cellar: :any,                 arm64_monterey: "014d11c8918c732dc17f4436d1946584ab42a443355f18096e6d6f3280390330"
+    sha256 cellar: :any,                 sonoma:         "ac4fb9cc76372d8ad8dff5c740ff2b5b6287a5303de625dd865e7afccbfd6b70"
+    sha256 cellar: :any,                 ventura:        "7c966c530b3e01f87be0c46e8969e1801fd7c0d9ad76a0736a6c7767cc87da94"
+    sha256 cellar: :any,                 monterey:       "899c8988186ea890db0be552eea88bd94496cd4b84217febe89c9b84c9acab7a"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:   "2b881638861905a1a730cdd618966dfcb548685314d86addd1ad6d110ba88432"
+  end
+
+  keg_only :provided_by_macos, "macOS provides libicucore.dylib (but nothing else)"
+
+  def install
+    args = %w[
+      --disable-samples
+      --disable-tests
+      --enable-static
+      --with-library-bits=64
+    ]
+
+    cd "source" do
+      system "./configure", *args, *std_configure_args
+      system "make"
+      system "make", "install"
+    end
+  end
+
+  test do
+    if File.exist? "/usr/share/dict/words"
+      system bin/"gendict", "--uchars", "/usr/share/dict/words", "dict"
+    else
+      (testpath/"hello").write "hello\nworld\n"
+      system bin/"gendict", "--uchars", "hello", "dict"
+    end
+  end
+end
